@@ -98,6 +98,7 @@ const uploadInput = async (event: Event) => {
 
     try {
       await upload.handleFiles(filesToUpload, path, overwrite);
+      await new Promise(resolve => setTimeout(resolve, 300));
       await fileStore.fetch(route.path);
       layoutStore.closeHovers();
     } catch (err) {
