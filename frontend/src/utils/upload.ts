@@ -1,3 +1,4 @@
+import { useFileStore } from "@/stores/file";
 import { useLayoutStore } from "@/stores/layout";
 import { useUploadStore } from "@/stores/upload";
 import url from "@/utils/url";
@@ -121,17 +122,46 @@ function detectType(mimetype: string): ResourceType {
   return "blob";
 }
 
-export function handleFiles(
+// export function handleFiles(
+//   files: UploadList,
+//   base: string,
+//   overwrite = false
+// ) {
+//   const uploadStore = useUploadStore();
+//   const layoutStore = useLayoutStore();
+
+//   layoutStore.closeHovers();
+
+//   for (const file of files) {
+//     let path = base;
+
+//     if (file.fullPath !== undefined) {
+//       path += url.encodePath(file.fullPath);
+//     } else {
+//       path += url.encodeRFC5987ValueChars(file.name);
+//     }
+
+//     if (file.isDir) {
+//       path += "/";
+//     }
+
+//     const type = file.isDir ? "dir" : detectType((file.file as File).type);
+
+//     uploadStore.upload(path, file.name, file.file ?? null, overwrite, type);
+//   }
+// }
+export async function handleFiles(
   files: UploadList,
   base: string,
   overwrite = false
-) {
+): Promise<void> {
+  // const fileStore = useFileStore();
   const uploadStore = useUploadStore();
   const layoutStore = useLayoutStore();
 
   layoutStore.closeHovers();
 
-  for (const file of files) {
+  const uploadPromises = files.map((file) => {
     let path = base;
 
     if (file.fullPath !== undefined) {
@@ -145,7 +175,10 @@ export function handleFiles(
     }
 
     const type = file.isDir ? "dir" : detectType((file.file as File).type);
+    return uploadStore.upload(path, file.name, file.file ?? null, overwrite, type);
+  });
 
-    uploadStore.upload(path, file.name, file.file ?? null, overwrite, type);
-  }
+  await Promise.all(uploadPromises);
+
+  // await fileStore.fetch();
 }

@@ -748,7 +748,7 @@ const drop = async (event: DragEvent) => {
   fileStore.preselect = preselect;
 };
 
-const uploadInput = (event: Event) => {
+const uploadInput = async (event: Event) => {
   const files = (event.currentTarget as HTMLInputElement)?.files;
   if (files === null) return;
 
@@ -770,25 +770,60 @@ const uploadInput = (event: Event) => {
   const path = route.path.endsWith("/") ? route.path : route.path + "/";
   const conflict = upload.checkConflict(uploadFiles, fileStore.req!.items);
 
+  // const doUpload = async (overwrite: boolean) => {
+  //   try {
+  //     await upload.handleFiles(uploadFiles, path, overwrite);
+  //     // await fileStore.fetch();
+  //     const route = useRoute();
+  //     await fileStore.fetch(route.path);
+  //   } catch (err) {
+  //     $showError(err instanceof Error ? err : String(err));
+  //   }
+  // };
+  const doUpload = async (overwrite: boolean) => {
+  let filesToUpload = uploadFiles;
+  if (!overwrite) {
+    const existingNames = new Set(fileStore.req!.items.map(i => i.name));
+    filesToUpload = uploadFiles.filter(f => !existingNames.has(
+      f.fullPath ? f.fullPath.split('/')[0] : f.name
+    ));
+    if (filesToUpload.length === 0) {
+      layoutStore.closeHovers();
+      return;
+    }
+  }
+
+  try {
+    await upload.handleFiles(filesToUpload, path, overwrite);
+    await fileStore.fetch(route.path);
+    layoutStore.closeHovers();
+  } catch (err) {
+    $showError(err instanceof Error ? err : String(err));
+  }
+};
+
   if (conflict) {
     layoutStore.showHover({
       prompt: "replace",
       action: (event: Event) => {
         event.preventDefault();
         layoutStore.closeHovers();
-        upload.handleFiles(uploadFiles, path, false);
+        // upload.handleFiles(uploadFiles, path, false);
+        doUpload(false);
       },
       confirm: (event: Event) => {
         event.preventDefault();
         layoutStore.closeHovers();
-        upload.handleFiles(uploadFiles, path, true);
+        // upload.handleFiles(uploadFiles, path, true);
+        doUpload(false);
       },
     });
 
     return;
   }
 
-  upload.handleFiles(uploadFiles, path);
+  // upload.handleFiles(uploadFiles, path);
+  await doUpload(false);
 };
 
 const resetOpacity = () => {
@@ -1113,7 +1148,7 @@ const createNewFile = () => {
   width: 100% !important;
   margin: 0.5rem 0 0.5rem 0 !important;
   padding: 0.5rem 0 0.5rem 8px !important;
-  background: #f8f9fa;
+  /* background: #f8f9fa; */
   border-radius: 4px;
 }
 

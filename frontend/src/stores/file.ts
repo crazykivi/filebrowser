@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
+import { files } from "@/api"; // ← убедитесь, что путь правильный
 
 export const useFileStore = defineStore("file", {
-  // convert to a function
   state: (): {
     req: Resource | null;
     oldReq: Resource | null;
@@ -23,20 +23,21 @@ export const useFileStore = defineStore("file", {
   }),
   getters: {
     selectedCount: (state) => state.selected.length,
-    // route: () => {
-    //   const routerStore = useRouterStore();
-    //   return routerStore.router.currentRoute;
-    // },
-    // isFiles: (state) => {
-    //   const layoutStore = useLayoutStore();
-    //   return !layoutStore.loading && state.route._value.name === "Files";
-    // },
     isListing: (state) => {
       return state.isFiles && state?.req?.isDir;
     },
   },
   actions: {
-    // no context as first argument, use `this` instead
+    async fetch(path: string) {
+      try {
+        const data = await files.fetch(path);
+        this.req = data;
+      } catch (error) {
+        // Можно пробросить ошибку вверх или обработать здесь
+        throw error;
+      }
+    },
+
     toggleMultiple() {
       this.multiple = !this.multiple;
     },
@@ -65,7 +66,6 @@ export const useFileStore = defineStore("file", {
     setSortByCreated(value: boolean) {
       this.sortByCreated = value;
     },
-    // easily reset state using `$reset`
     clearFile() {
       this.$reset();
     },
