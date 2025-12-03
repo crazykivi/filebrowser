@@ -324,7 +324,11 @@ onMounted(async () => {
   updatePreview();
 });
 
-onBeforeUnmount(() => window.removeEventListener("keydown", key));
+// onBeforeUnmount(() => window.removeEventListener("keydown", key));
+onBeforeUnmount(() => {
+  sessionStorage.setItem("fileListingScrollY", window.scrollY.toString());
+  window.removeEventListener("keydown", key);
+});
 
 // Specify methods
 const deleteFile = () => {
@@ -470,4 +474,5 @@ const download = () => window.open(downloadUrl.value);
 const editAsText = () => {
   router.push({ path: route.path, query: { edit: "true" } });
 };
+
 </script>

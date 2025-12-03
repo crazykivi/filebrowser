@@ -44,7 +44,8 @@
     "openFile": "Open file",
     "discardChanges": "Discard",
     "saveChanges": "Save changes",
-    "editAsText": "Edit as Text"
+    "editAsText": "Edit as Text",
+    "sortByDate": "By creation date"
   },
   "download": {
     "downloadFile": "Download File",

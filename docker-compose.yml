@@ -1,0 +1,20 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  filebrowser:
+    image: filebrowser-crazykivibuild
+    container_name: filebrowser-crazykivi
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      # For Linux
+      # - ./build/files:/srv
+      # - ./builddb:/database
+      # For windows
+      - D:/filebrowser/filebrowser/build/files:/srv
+      - D:/filebrowser/filebrowser/build/db:/database
+    restart: unless-stopped

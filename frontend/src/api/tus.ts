@@ -7,6 +7,80 @@ const RETRY_BASE_DELAY = 1000;
 const RETRY_MAX_DELAY = 20000;
 const CURRENT_UPLOAD_LIST: { [key: string]: tus.Upload } = {};
 
+// export async function upload(
+//   filePath: string,
+//   content: ApiContent = "",
+//   overwrite = false,
+//   onupload: any
+// ) {
+//   if (!tusSettings) {
+//     // Shouldn't happen as we check for tus support before calling this function
+//     throw new Error("Tus.io settings are not defined");
+//   }
+
+//   filePath = removePrefix(filePath);
+//   const resourcePath = `${tusEndpoint}${filePath}?override=${overwrite}`;
+
+//   const authStore = useAuthStore();
+
+//   // Exit early because of typescript, tus content can't be a string
+//   if (content === "") {
+//     return false;
+//   }
+//   return new Promise<void | string>((resolve, reject) => {
+//     const upload = new tus.Upload(content, {
+//       endpoint: `${origin}${baseURL}${resourcePath}`,
+//       chunkSize: tusSettings.chunkSize,
+//       retryDelays: computeRetryDelays(tusSettings),
+//       parallelUploads: 1,
+//       storeFingerprintForResuming: false,
+//       headers: {
+//         "X-Auth": authStore.jwt,
+//       },
+//       onShouldRetry: function (err) {
+//         const status = err.originalResponse
+//           ? err.originalResponse.getStatus()
+//           : 0;
+
+//         // Do not retry for file conflict.
+//         if (status === 409) {
+//           return false;
+//         }
+
+//         return true;
+//       },
+//       onError: function (error: Error | tus.DetailedError) {
+//         delete CURRENT_UPLOAD_LIST[filePath];
+
+//         if (error.message === "Upload aborted") {
+//           return reject(error);
+//         }
+
+//         const message =
+//           error instanceof tus.DetailedError
+//             ? error.originalResponse === null
+//               ? "000 No connection"
+//               : error.originalResponse.getBody()
+//             : "Upload failed";
+
+//         console.error(error);
+
+//         reject(new Error(message));
+//       },
+//       onProgress: function (bytesUploaded) {
+//         if (typeof onupload === "function") {
+//           onupload({ loaded: bytesUploaded });
+//         }
+//       },
+//       onSuccess: function () {
+//         delete CURRENT_UPLOAD_LIST[filePath];
+//         resolve();
+//       },
+//     });
+//     CURRENT_UPLOAD_LIST[filePath] = upload;
+//     upload.start();
+//   });
+// }
 export async function upload(
   filePath: string,
   content: ApiContent = "",
@@ -14,7 +88,6 @@ export async function upload(
   onupload: any
 ) {
   if (!tusSettings) {
-    // Shouldn't happen as we check for tus support before calling this function
     throw new Error("Tus.io settings are not defined");
   }
 
@@ -23,10 +96,16 @@ export async function upload(
 
   const authStore = useAuthStore();
 
-  // Exit early because of typescript, tus content can't be a string
   if (content === "") {
     return false;
   }
+
+  // Getting the original date if content is a File | Получение оригинальной даты, если content - File
+  let mtime = "";
+  if (content instanceof File) {
+    mtime = content.lastModified.toString();
+  }
+
   return new Promise<void | string>((resolve, reject) => {
     const upload = new tus.Upload(content, {
       endpoint: `${origin}${baseURL}${resourcePath}`,
@@ -37,34 +116,33 @@ export async function upload(
       headers: {
         "X-Auth": authStore.jwt,
       },
+      // Metadata transmission | Передача метаданных
+      metadata: {
+        filename: (content as File).name || "unknown",
+        filetype: (content as File).type || "application/octet-stream",
+        mtime,
+      },
       onShouldRetry: function (err) {
         const status = err.originalResponse
           ? err.originalResponse.getStatus()
           : 0;
-
-        // Do not retry for file conflict.
         if (status === 409) {
           return false;
         }
-
         return true;
       },
       onError: function (error: Error | tus.DetailedError) {
         delete CURRENT_UPLOAD_LIST[filePath];
-
         if (error.message === "Upload aborted") {
           return reject(error);
         }
-
         const message =
           error instanceof tus.DetailedError
             ? error.originalResponse === null
               ? "000 No connection"
               : error.originalResponse.getBody()
             : "Upload failed";
-
         console.error(error);
-
         reject(new Error(message));
       },
       onProgress: function (bytesUploaded) {

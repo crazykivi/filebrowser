@@ -3,81 +3,33 @@
     <header-bar showMenu showLogo>
       <search />
       <title />
-      <action
-        class="search-button"
-        icon="search"
-        :label="t('buttons.search')"
-        @action="openSearch()"
-      />
+      <action class="search-button" icon="search" :label="t('buttons.search')" @action="openSearch()" />
 
       <template #actions>
         <template v-if="!isMobile">
-          <action
-            v-if="headerButtons.share"
-            icon="share"
-            :label="t('buttons.share')"
-            show="share"
-          />
-          <action
-            v-if="headerButtons.rename"
-            icon="mode_edit"
-            :label="t('buttons.rename')"
-            show="rename"
-          />
-          <action
-            v-if="headerButtons.copy"
-            id="copy-button"
-            icon="content_copy"
-            :label="t('buttons.copyFile')"
-            show="copy"
-          />
-          <action
-            v-if="headerButtons.move"
-            id="move-button"
-            icon="forward"
-            :label="t('buttons.moveFile')"
-            show="move"
-          />
-          <action
-            v-if="headerButtons.delete"
-            id="delete-button"
-            icon="delete"
-            :label="t('buttons.delete')"
-            show="delete"
-          />
+          <action v-if="headerButtons.share" icon="share" :label="t('buttons.share')" show="share" />
+          <action v-if="headerButtons.rename" icon="mode_edit" :label="t('buttons.rename')" show="rename" />
+          <action v-if="headerButtons.copy" id="copy-button" icon="content_copy" :label="t('buttons.copyFile')"
+            show="copy" />
+          <action v-if="headerButtons.move" id="move-button" icon="forward" :label="t('buttons.moveFile')"
+            show="move" />
+          <action v-if="headerButtons.delete" id="delete-button" icon="delete" :label="t('buttons.delete')"
+            show="delete" />
+          <action v-if="authStore.user?.perm.create && fileStore.selectedCount === 0" icon="add"
+            :label="$t('buttons.create')" @click="showCreateModeMenu($event)" />
         </template>
 
-        <action
-          v-if="headerButtons.shell"
-          icon="code"
-          :label="t('buttons.shell')"
-          @action="layoutStore.toggleShell"
-        />
-        <action
-          :icon="viewIcon"
-          :label="t('buttons.switchView')"
-          @action="switchView"
-        />
-        <action
-          v-if="headerButtons.download"
-          icon="file_download"
-          :label="t('buttons.download')"
-          @action="download"
-          :counter="fileStore.selectedCount"
-        />
-        <action
-          v-if="headerButtons.upload"
-          icon="file_upload"
-          id="upload-button"
-          :label="t('buttons.upload')"
-          @action="uploadFunc"
-        />
+        <action v-if="fileStore.req?.numFiles" icon="calendar_today" :label="t('buttons.sortByDate')"
+          @click="toggleSortByCreated" :class="{ active: sortByCreated }" />
+
+        <action v-if="headerButtons.shell" icon="code" :label="t('buttons.shell')" @action="layoutStore.toggleShell" />
+        <action :icon="viewIcon" :label="t('buttons.switchView')" @action="switchView" />
+        <action v-if="headerButtons.download" icon="file_download" :label="t('buttons.download')" @action="download"
+          :counter="fileStore.selectedCount" />
+        <action v-if="headerButtons.upload" icon="file_upload" id="upload-button" :label="t('buttons.upload')"
+          @action="uploadFunc" />
         <action icon="info" :label="t('buttons.info')" show="info" />
-        <action
-          icon="check_circle"
-          :label="t('buttons.selectMultiple')"
-          @action="toggleMultipleSelection"
-        />
+        <action icon="check_circle" :label="t('buttons.selectMultiple')" @action="toggleMultipleSelection" />
       </template>
     </header-bar>
 
@@ -85,36 +37,11 @@
       <span v-if="fileStore.selectedCount > 0">
         {{ t("prompts.filesSelected", fileStore.selectedCount) }}
       </span>
-      <action
-        v-if="headerButtons.share"
-        icon="share"
-        :label="t('buttons.share')"
-        show="share"
-      />
-      <action
-        v-if="headerButtons.rename"
-        icon="mode_edit"
-        :label="t('buttons.rename')"
-        show="rename"
-      />
-      <action
-        v-if="headerButtons.copy"
-        icon="content_copy"
-        :label="t('buttons.copyFile')"
-        show="copy"
-      />
-      <action
-        v-if="headerButtons.move"
-        icon="forward"
-        :label="t('buttons.moveFile')"
-        show="move"
-      />
-      <action
-        v-if="headerButtons.delete"
-        icon="delete"
-        :label="t('buttons.delete')"
-        show="delete"
-      />
+      <action v-if="headerButtons.share" icon="share" :label="t('buttons.share')" show="share" />
+      <action v-if="headerButtons.rename" icon="mode_edit" :label="t('buttons.rename')" show="rename" />
+      <action v-if="headerButtons.copy" icon="content_copy" :label="t('buttons.copyFile')" show="copy" />
+      <action v-if="headerButtons.move" icon="forward" :label="t('buttons.moveFile')" show="move" />
+      <action v-if="headerButtons.delete" icon="delete" :label="t('buttons.delete')" show="delete" />
     </div>
 
     <div v-if="layoutStore.loading">
@@ -128,75 +55,33 @@
       </h2>
     </div>
     <template v-else>
-      <div
-        v-if="
-          (fileStore.req?.numDirs ?? 0) + (fileStore.req?.numFiles ?? 0) == 0
-        "
-      >
+      <div v-if="(fileStore.req?.numDirs ?? 0) + (fileStore.req?.numFiles ?? 0) == 0">
         <h2 class="message">
           <i class="material-icons">sentiment_dissatisfied</i>
           <span>{{ t("files.lonely") }}</span>
         </h2>
-        <input
-          style="display: none"
-          type="file"
-          id="upload-input"
-          @change="uploadInput($event)"
-          multiple
-        />
-        <input
-          style="display: none"
-          type="file"
-          id="upload-folder-input"
-          @change="uploadInput($event)"
-          webkitdirectory
-          multiple
-        />
+        <input style="display: none" type="file" id="upload-input" @change="uploadInput($event)" multiple />
+        <input style="display: none" type="file" id="upload-folder-input" @change="uploadInput($event)" webkitdirectory
+          multiple />
       </div>
-      <div
-        v-else
-        id="listing"
-        ref="listing"
-        class="file-icons"
-        :class="authStore.user?.viewMode ?? ''"
-      >
+      <div v-else id="listing" ref="listing" class="file-icons" :class="authStore.user?.viewMode ?? ''">
         <div>
           <div class="item header">
             <div>
-              <p
-                :class="{ active: nameSorted }"
-                class="name"
-                role="button"
-                tabindex="0"
-                @click="sort('name')"
-                :title="t('files.sortByName')"
-                :aria-label="t('files.sortByName')"
-              >
+              <p :class="{ active: nameSorted }" class="name" role="button" tabindex="0" @click="sort('name')"
+                :title="t('files.sortByName')" :aria-label="t('files.sortByName')">
                 <span>{{ t("files.name") }}</span>
                 <i class="material-icons">{{ nameIcon }}</i>
               </p>
 
-              <p
-                :class="{ active: sizeSorted }"
-                class="size"
-                role="button"
-                tabindex="0"
-                @click="sort('size')"
-                :title="t('files.sortBySize')"
-                :aria-label="t('files.sortBySize')"
-              >
+              <p :class="{ active: sizeSorted }" class="size" role="button" tabindex="0" @click="sort('size')"
+                :title="t('files.sortBySize')" :aria-label="t('files.sortBySize')">
                 <span>{{ t("files.size") }}</span>
                 <i class="material-icons">{{ sizeIcon }}</i>
               </p>
-              <p
-                :class="{ active: modifiedSorted }"
-                class="modified"
-                role="button"
-                tabindex="0"
-                @click="sort('modified')"
-                :title="t('files.sortByLastModified')"
-                :aria-label="t('files.sortByLastModified')"
-              >
+              <p :class="{ active: modifiedSorted }" class="modified" role="button" tabindex="0"
+                @click="sort('modified')" :title="t('files.sortByLastModified')"
+                :aria-label="t('files.sortByLastModified')">
                 <span>{{ t("files.lastModified") }}</span>
                 <i class="material-icons">{{ modifiedIcon }}</i>
               </p>
@@ -204,123 +89,94 @@
           </div>
         </div>
 
-        <h2 v-if="fileStore.req?.numDirs ?? false">
-          {{ t("files.folders") }}
-        </h2>
-        <div
-          v-if="fileStore.req?.numDirs ?? false"
-          @contextmenu="showContextMenu"
-        >
-          <item
-            v-for="item in dirs"
-            :key="base64(item.name)"
-            v-bind:index="item.index"
-            v-bind:name="item.name"
-            v-bind:isDir="item.isDir"
-            v-bind:url="item.url"
-            v-bind:modified="item.modified"
-            v-bind:type="item.type"
-            v-bind:size="item.size"
-            v-bind:path="item.path"
-          >
-          </item>
+        <!-- <div v-if="sortByCreated && groupedFileGroups.length > 0">
+          <div v-for="group in groupedFileGroups" :key="group.title" class="date-group-container">
+            <h2 class="date-group">{{ group.title }}</h2>
+            <div @contextmenu="showContextMenu">
+              <item v-for="item in group.items" :key="base64(item.name)" :index="item.index" :name="item.name"
+                :isDir="item.isDir" :url="item.url" :modified="item.modified" :type="item.type" :size="item.size"
+                :path="item.path" />
+            </div>
+          </div>
+        </div> -->
+        <!-- <div v-if="sortByCreated && groupedFileGroups.length > 0">
+          <div v-for="group in groupedFileGroups" :key="group.title" class="date-group-container">
+            <div class="group-wrapper">
+              <h2 class="date-group">{{ group.title }}</h2>
+              <div @contextmenu="showContextMenu" class="group-items">
+                <item v-for="item in group.items" :key="base64(item.name)" :index="item.index" :name="item.name"
+                  :isDir="item.isDir" :url="item.url" :modified="item.modified" :type="item.type" :size="item.size"
+                  :path="item.path" />
+              </div>
+            </div>
+          </div>
+        </div> -->
+        <!-- Grouping mode by creation date | Режим группировки по дате создания -->
+        <div v-if="sortByCreated && groupedFileGroups.length > 0">
+          <!-- <div v-for="group in groupedFileGroups" :key="group.title" class="date-group-section"> -->
+          <div v-for="group in groupedFileGroups" :key="group.title" class="date-group-section"
+            :class="authStore.user?.viewMode ? `viewmode--${authStore.user.viewMode.replace(' ', '-')}` : ''">
+            <div class="group-header">
+              <h2>{{ group.title }}</h2>
+            </div>
+            <div @contextmenu="showContextMenu" class="group-items">
+              <item v-for="item in group.items" :key="base64(item.name)" :index="item.index" :name="item.name"
+                :isDir="item.isDir" :url="item.url" :modified="item.modified" :type="item.type" :size="item.size"
+                :path="item.path" />
+            </div>
+          </div>
         </div>
 
-        <h2 v-if="fileStore.req?.numFiles ?? false">
-          {{ t("files.files") }}
-        </h2>
-        <div
-          v-if="fileStore.req?.numFiles ?? false"
-          @contextmenu="showContextMenu"
-        >
-          <item
-            v-for="item in files"
-            :key="base64(item.name)"
-            v-bind:index="item.index"
-            v-bind:name="item.name"
-            v-bind:isDir="item.isDir"
-            v-bind:url="item.url"
-            v-bind:modified="item.modified"
-            v-bind:type="item.type"
-            v-bind:size="item.size"
-            v-bind:path="item.path"
-          >
-          </item>
-        </div>
-        <context-menu
-          :show="isContextMenuVisible"
-          :pos="contextMenuPos"
-          @hide="hideContextMenu"
-        >
-          <action
-            v-if="headerButtons.share"
-            icon="share"
-            :label="t('buttons.share')"
-            show="share"
-          />
-          <action
-            v-if="headerButtons.rename"
-            icon="mode_edit"
-            :label="t('buttons.rename')"
-            show="rename"
-          />
-          <action
-            v-if="headerButtons.copy"
-            id="copy-button"
-            icon="content_copy"
-            :label="t('buttons.copyFile')"
-            show="copy"
-          />
-          <action
-            v-if="headerButtons.move"
-            id="move-button"
-            icon="forward"
-            :label="t('buttons.moveFile')"
-            show="move"
-          />
-          <action
-            v-if="headerButtons.delete"
-            id="delete-button"
-            icon="delete"
-            :label="t('buttons.delete')"
-            show="delete"
-          />
-          <action
-            v-if="headerButtons.download"
-            icon="file_download"
-            :label="t('buttons.download')"
-            @action="download"
-            :counter="fileStore.selectedCount"
-          />
+        <!-- Normal mode (when sorting by date is not enabled) | Обычный режим (когда не включена сортировка по дате) -->
+        <template v-else>
+          <h2 v-if="fileStore.req?.numDirs ?? false">
+            {{ t("files.folders") }}
+          </h2>
+          <div v-if="fileStore.req?.numDirs ?? false" @contextmenu="showContextMenu">
+            <item v-for="item in dirs" :key="base64(item.name)" v-bind:index="item.index" v-bind:name="item.name"
+              v-bind:isDir="item.isDir" v-bind:url="item.url" v-bind:modified="item.modified" v-bind:type="item.type"
+              v-bind:size="item.size" v-bind:path="item.path">
+            </item>
+          </div>
+
+          <h2 v-if="fileStore.req?.numFiles ?? false">
+            {{ t("files.files") }}
+          </h2>
+          <div v-if="fileStore.req?.numFiles ?? false" @contextmenu="showContextMenu">
+            <item v-for="item in files" :key="base64(item.name)" v-bind:index="item.index" v-bind:name="item.name"
+              v-bind:isDir="item.isDir" v-bind:url="item.url" v-bind:modified="item.modified" v-bind:type="item.type"
+              v-bind:size="item.size" v-bind:path="item.path">
+            </item>
+          </div>
+        </template>
+
+        <context-menu :show="isContextMenuVisible" :pos="contextMenuPos" @hide="hideContextMenu">
+          <action v-if="headerButtons.share" icon="share" :label="t('buttons.share')" show="share" />
+          <action v-if="headerButtons.rename" icon="mode_edit" :label="t('buttons.rename')" show="rename" />
+          <action v-if="headerButtons.copy" id="copy-button" icon="content_copy" :label="t('buttons.copyFile')"
+            show="copy" />
+          <action v-if="headerButtons.move" id="move-button" icon="forward" :label="t('buttons.moveFile')"
+            show="move" />
+          <action v-if="headerButtons.delete" id="delete-button" icon="delete" :label="t('buttons.delete')"
+            show="delete" />
+          <action v-if="headerButtons.download" icon="file_download" :label="t('buttons.download')" @action="download"
+            :counter="fileStore.selectedCount" />
+          <action icon="add" :label="$t('buttons.create')" @click="showCreateModeMenu" />
           <action icon="info" :label="t('buttons.info')" show="info" />
         </context-menu>
+        <context-menu :show="isCreateMenuVisible" :pos="createMenuPos" @hide="hideCreateMenu">
+          <action icon="create_new_folder" :label="$t('sidebar.newFolder')" @action="createNewFolder" />
+          <action icon="note_add" :label="$t('sidebar.newFile')" @action="createNewFile" />
+        </context-menu>
 
-        <input
-          style="display: none"
-          type="file"
-          id="upload-input"
-          @change="uploadInput($event)"
-          multiple
-        />
-        <input
-          style="display: none"
-          type="file"
-          id="upload-folder-input"
-          @change="uploadInput($event)"
-          webkitdirectory
-          multiple
-        />
+        <input style="display: none" type="file" id="upload-input" @change="uploadInput($event)" multiple />
+        <input style="display: none" type="file" id="upload-folder-input" @change="uploadInput($event)" webkitdirectory
+          multiple />
 
         <div :class="{ active: fileStore.multiple }" id="multiple-selection">
           <p>{{ t("files.multipleSelectionEnabled") }}</p>
-          <div
-            @click="() => (fileStore.multiple = false)"
-            tabindex="0"
-            role="button"
-            :title="t('buttons.clear')"
-            :aria-label="t('buttons.clear')"
-            class="action"
-          >
+          <div @click="() => (fileStore.multiple = false)" tabindex="0" role="button" :title="t('buttons.clear')"
+            :aria-label="t('buttons.clear')" class="action">
             <i class="material-icons">clear</i>
           </div>
         </div>
@@ -361,6 +217,12 @@ import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
 import { removePrefix } from "@/api/utils";
 
+import { format, parseISO } from 'date-fns';
+import { ru } from 'date-fns/locale';
+
+// const sortByCreated = ref(false);
+const sortByCreated = computed(() => fileStore.sortByCreated);
+
 const showLimit = ref<number>(50);
 const columnWidth = ref<number>(280);
 const dragCounter = ref<number>(0);
@@ -383,6 +245,48 @@ const route = useRoute();
 const { t } = useI18n();
 
 const listing = ref<HTMLElement | null>(null);
+
+// File grouping function by month/year | функция группировки файлов по месяцу/году
+function groupByMonthYear(items: ResourceItem[]) {
+  const groups: { [key: string]: ResourceItem[] } = {};
+
+  items.forEach(item => {
+    const date = parseISO(item.modified); // always modified | всегда modified
+    const key = format(date, 'LLLL yyyy', { locale: ru });
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(item);
+  });
+
+  const sortedKeys = Object.keys(groups).sort((a, b) => {
+    const [monthA, yearA] = a.split(' ');
+    const [monthB, yearB] = b.split(' ');
+    const dateA = new Date(parseInt(yearA), getMonthIndex(monthA));
+    const dateB = new Date(parseInt(yearB), getMonthIndex(monthB));
+    return dateB.getTime() - dateA.getTime();
+  });
+
+  return sortedKeys.map(key => ({ title: key, items: groups[key] }));
+}
+
+// Helper function: month name -> index (0–11) | Вспомогательная функция: название месяца -> индекс (0–11)
+function getMonthIndex(monthName: string): number {
+  const months = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
+  return months.findIndex(m => m.startsWith(monthName.toLowerCase()));
+}
+
+// Computed property for file groups | вычисляемое свойство для групп файлов
+const groupedFileGroups = computed(() => {
+  if (!sortByCreated.value || !fileStore.req) return [];
+
+  const allFiles = fileStore.req.items.filter(item => !item.isDir);
+  const sortedFiles = [...allFiles].sort((a, b) => {
+    const dateA = new Date(a.modified).getTime(); // only modified |только modified
+    const dateB = new Date(b.modified).getTime();
+    return dateB - dateA;
+  });
+
+  return groupByMonthYear(sortedFiles);
+});
 
 const nameSorted = computed(() =>
   fileStore.req ? fileStore.req.sorting.by === "name" : false
@@ -477,24 +381,51 @@ const isMobile = computed(() => {
   return width.value <= 736;
 });
 
-watch(req, () => {
-  // Reset the show value
-  showLimit.value = 50;
+// mode switching method | метод переключения режима
+const toggleSortByCreated = () => {
+  fileStore.toggleSortByCreated();
+};
 
-  nextTick(() => {
-    // Ensures that the listing is displayed
-    // How much every listing item affects the window height
-    setItemWeight();
+// watch(req, () => {
+//   // Reset the show value
+//   showLimit.value = 50;
 
-    // Scroll to the item opened previously
-    if (!revealPreviousItem()) {
-      // Fill and fit the window with listing items
-      fillWindow(true);
+//   nextTick(() => {
+//     // Ensures that the listing is displayed
+//     // How much every listing item affects the window height
+//     setItemWeight();
+
+//     // Scroll to the item opened previously
+//     if (!revealPreviousItem()) {
+//       // Fill and fit the window with listing items
+//       fillWindow(true);
+//     }
+//   });
+// });
+watch(
+  () => route.path,
+  (newPath, oldPath) => {
+    if (oldPath !== newPath && oldPath.startsWith(newPath)) {
+      const saved = sessionStorage.getItem('filePreselect');
+      if (saved) {
+        fileStore.preselect = saved;
+        nextTick(() => {
+          setTimeout(() => {
+            revealPreviousItem();
+          }, 100);
+        });
+      }
     }
-  });
-});
+  }
+);
 
 onMounted(() => {
+  if (!fileStore.preselect) {
+    const saved = sessionStorage.getItem('filePreselect');
+    if (saved) {
+      fileStore.preselect = saved;
+    }
+  }
   // Check the columns size for the first time.
   columnsResize();
 
@@ -702,7 +633,7 @@ const paste = (event: Event) => {
 
 const columnsResize = () => {
   // Update the columns size based on the window width.
-  const items_ = css(["#listing.mosaic .item", ".mosaic#listing .item"]);
+  const items_ = css(["#listing.mosaic .item", ".mosaic#listing .item", ".date-group-section.viewmode--mosaic .item", ".date-group-section.viewmode--mosaic-gallery .item"]);
   if (items_ === null) return;
 
   let columns = Math.floor(
@@ -1019,33 +950,193 @@ const fillWindow = (fit = false) => {
   showLimit.value = showQuantity > totalItems ? totalItems : showQuantity;
 };
 
+// const revealPreviousItem = () => {
+//   if (!fileStore.req || !fileStore.oldReq) return;
+
+//   const index = fileStore.selected[0];
+//   if (index === undefined) return;
+
+//   showLimit.value =
+//     index + Math.ceil((window.innerHeight * 2) / itemWeight.value);
+
+//   nextTick(() => {
+//     const items = document.querySelectorAll("#listing .item");
+//     items[index].scrollIntoView({ block: "center" });
+//   });
+
+//   return true;
+// };
 const revealPreviousItem = () => {
-  if (!fileStore.req || !fileStore.oldReq) return;
+  // if (!fileStore.preselect) {
+  //   console.groupEnd();
+  //   return false;
+  // }
+  const url = fileStore.preselect;
+  if (!url) {
+    console.groupEnd();
+    return false;
+  }
 
-  const index = fileStore.selected[0];
-  if (index === undefined) return;
-
-  showLimit.value =
-    index + Math.ceil((window.innerHeight * 2) / itemWeight.value);
-
+  // Waiting for the next tick to allow the DOM to finish rendering | Ожидание следующего тика, чтобы DOM успел отрисоваться
   nextTick(() => {
-    const items = document.querySelectorAll("#listing .item");
-    items[index].scrollIntoView({ block: "center" });
+    const selector = `#listing .item[data-url="${CSS.escape(url)}"]`;
+    // const selector = `#listing .item[data-url="${CSS.escape(fileStore.preselect)}"]`;
+
+    const target = document.querySelector(selector) as HTMLElement | null;
+
+    if (target) {
+      // Scrolling to the element | Прокрутка к элементу
+      target.scrollIntoView({ block: "center", behavior: "instant" });
+
+      // Clearing | Очистка
+      fileStore.preselect = null;
+      sessionStorage.removeItem('filePreselect');
+      target.scrollIntoView({ block: "center", behavior: "instant" });
+    }
+    console.groupEnd();
   });
 
   return true;
 };
 
+const closeAllMenus = () => {
+  isContextMenuVisible.value = false;
+  isCreateMenuVisible.value = false;
+};
+
 const showContextMenu = (event: MouseEvent) => {
+  closeAllMenus();
   event.preventDefault();
   isContextMenuVisible.value = true;
-  contextMenuPos.value = {
-    x: event.clientX + 8,
-    y: event.clientY + Math.floor(window.scrollY),
-  };
+  // contextMenuPos.value = {
+  //   x: event.clientX + 8,
+  //   y: event.clientY + Math.floor(window.scrollY),
+  // };
+  const menuWidth = 200;
+  const menuHeight = 150;
+
+  let x = event.clientX + 8;
+  let y = event.clientY + window.scrollY;
+
+  // Horizontally | По горизонтали
+  if (x + menuWidth > window.innerWidth) {
+    x = window.innerWidth - menuWidth - 5;
+  }
+
+  // Vertically | По вертикали
+  if (y + menuHeight > window.innerHeight + window.scrollY) {
+    y = event.clientY + window.scrollY - menuHeight;
+  }
+
+  isContextMenuVisible.value = true;
+  contextMenuPos.value = { x, y };
 };
 
 const hideContextMenu = () => {
   isContextMenuVisible.value = false;
 };
+
+const createMenuPos = ref<{ x: number; y: number }>({ x: 0, y: 0 });
+const isCreateMenuVisible = ref<boolean>(false);
+
+const showCreateModeMenu = (event?: MouseEvent) => {
+  isCreateMenuVisible.value = true;
+  if (isContextMenuVisible.value) {
+    const menuWidth = 200;
+    const menuHeight = 150;
+    let x = contextMenuPos.value.x;
+    let y = contextMenuPos.value.y;
+    let newX = x + 219;
+    let newY = y;
+    if (newX + menuWidth > window.innerWidth) newX = x - menuWidth - 19;
+    createMenuPos.value = { x: newX, y: newY };
+  } else {
+    if (event) {
+      const menuWidth = 200;
+      const menuHeight = 150;
+      let x = event.clientX;
+      let y = event.clientY + window.scrollY;
+      let newX = x;
+      let newY = y;
+      if (newX + menuWidth > window.innerWidth) newX = x - menuWidth - 10;
+      if (newY + menuHeight > window.innerHeight + window.scrollY) newY = y - menuHeight - 100;
+      createMenuPos.value = { x: newX, y: newY };
+      event.preventDefault();
+    } else {
+      createMenuPos.value = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    }
+  }
+};
+
+const hideCreateMenu = () => {
+  isCreateMenuVisible.value = false;
+};
+
+const createNewFolder = () => {
+  closeAllMenus();
+  layoutStore.showHover({
+    prompt: "newDir",
+  });
+};
+
+const createNewFile = () => {
+  closeAllMenus();
+  layoutStore.showHover({
+    prompt: "newFile",
+  });
+};
 </script>
+
+<style scoped>
+.date-group {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #555;
+  padding-left: 8px;
+  font-size: 1.1rem;
+}
+
+.group-header {
+  display: block;
+  width: 100%;
+  /* margin-bottom: 0.5rem; */
+  padding-left: 8px;
+  font-weight: 600;
+  color: #555;
+  font-size: 1.1rem;
+}
+
+.mosaic .group-header {
+  clear: both;
+  display: block !important;
+  width: 100% !important;
+  margin: 0.5rem 0 0.5rem 0 !important;
+  padding: 0.5rem 0 0.5rem 8px !important;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.mosaic .group-header+.group-items .item:first-child {
+  margin-top: 0;
+}
+
+/* For the gallery | Для галереи */
+.date-group-section.viewmode--list {
+  width: 100%;
+}
+
+.date-group-section {
+  width: 100%;
+}
+
+.date-group-section.viewmode--mosaic {
+  width: 100%;
+}
+
+.date-group-section.viewmode--mosaic .group-items,
+.date-group-section.viewmode--mosaic-gallery .group-items {
+  display: flex;
+  flex-wrap: wrap;
+}
+</style>

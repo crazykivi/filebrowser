@@ -15,7 +15,7 @@
         <i class="material-icons">folder</i>
         <span>{{ $t("sidebar.myFiles") }}</span>
       </button>
-
+      <!-- 
       <div v-if="user.perm.create">
         <button
           @click="showHover('newDir')"
@@ -36,7 +36,7 @@
           <i class="material-icons">note_add</i>
           <span>{{ $t("sidebar.newFile") }}</span>
         </button>
-      </div>
+      </div> -->
 
       <div v-if="user.perm.admin">
         <button

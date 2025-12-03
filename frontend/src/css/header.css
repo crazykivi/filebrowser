@@ -1,5 +1,6 @@
 header {
-  z-index: 1000;
+  /* z-index: 1000; */
+  z-index: 999;
   background: var(--surfacePrimary);
   border-bottom: 1px solid var(--divider);
   box-shadow: 0 0 5px var(--borderPrimary);

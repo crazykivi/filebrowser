@@ -44,7 +44,8 @@
     "openFile": "Открыть файл",
     "discardChanges": "Отказаться",
     "saveChanges": "Save changes",
-    "editAsText": "Edit as Text"
+    "editAsText": "Edit as Text",
+    "sortByDate": "По дате создания"
   },
   "download": {
     "downloadFile": "Скачать файл",

@@ -1,6 +1,7 @@
 <template>
   <div
     class="item"
+    :data-url="url" 
     role="button"
     tabindex="0"
     :draggable="isDraggable"
@@ -303,6 +304,8 @@ const click = (event: Event | KeyboardEvent) => {
 
 const open = () => {
   router.push({ path: props.url });
+  fileStore.preselect = props.url; 
+  sessionStorage.setItem('filePreselect', props.url);
 };
 
 const getExtension = (fileName: string): string => {

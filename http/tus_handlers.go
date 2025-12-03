@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/jellydator/ttlcache/v3"
@@ -17,6 +19,8 @@ import (
 
 	"github.com/filebrowser/filebrowser/v2/files"
 )
+
+var pendingModTimes = ttlcache.New[string, time.Time]()
 
 const maxUploadWait = 3 * time.Minute
 
@@ -153,6 +157,27 @@ func tusPostHandler() handleFunc {
 			return http.StatusBadRequest, fmt.Errorf("invalid path: %w", err)
 		}
 
+		// ВСТАВКА ДАТЫ ИЗМЕНЕНИЯ
+		metadataHeader := r.Header.Get("Upload-Metadata")
+		if metadataHeader != "" {
+			metaMap := make(map[string]string)
+			for _, part := range strings.Split(metadataHeader, ",") {
+				parts := strings.SplitN(part, " ", 2)
+				if len(parts) == 2 {
+					key := parts[0]
+					if val, err := base64.StdEncoding.DecodeString(parts[1]); err == nil {
+						metaMap[key] = string(val)
+					}
+				}
+			}
+			if mtimeStr, ok := metaMap["mtime"]; ok {
+				if mtimeMs, err := strconv.ParseInt(mtimeStr, 10, 64); err == nil {
+					modTime := time.Unix(mtimeMs/1000, (mtimeMs%1000)*int64(time.Millisecond))
+					pendingModTimes.Set(file.RealPath(), modTime, 10*time.Minute)
+				}
+			}
+		}
+		// КОНЕЦ ДАТЫ
 		w.Header().Set("Location", path)
 		return http.StatusCreated, nil
 	})
@@ -261,6 +286,32 @@ func tusPatchHandler() handleFunc {
 
 		if newOffset >= uploadLength {
 			completeUpload(file.RealPath())
+			// ТАКЖЕ ДАТА
+			if item := pendingModTimes.Get(file.RealPath()); item != nil {
+				var absPath string
+
+				switch d.user.Fs.(type) {
+				case *afero.OsFs:
+					absPath = filepath.FromSlash(r.URL.Path)
+				case *afero.BasePathFs:
+					absPath = file.RealPath()
+					if !filepath.IsAbs(absPath) {
+						absPath = ""
+					}
+				default:
+					absPath = ""
+				}
+
+				if absPath != "" {
+					err := os.Chtimes(absPath, item.Value(), item.Value())
+					if err != nil {
+						fmt.Printf("Warning: failed to set mtime on %s: %v\n", absPath, err)
+					}
+				}
+
+				pendingModTimes.Delete(file.RealPath())
+			}
+			// КОНЕЦ
 			_ = d.RunHook(func() error { return nil }, "upload", r.URL.Path, "", d.user)
 		}
 

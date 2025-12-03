@@ -10,6 +10,7 @@ export const useFileStore = defineStore("file", {
     multiple: boolean;
     isFiles: boolean;
     preselect: string | null;
+    sortByCreated: boolean;
   } => ({
     req: null,
     oldReq: null,
@@ -18,6 +19,7 @@ export const useFileStore = defineStore("file", {
     multiple: false,
     isFiles: false,
     preselect: null,
+    sortByCreated: false,
   }),
   getters: {
     selectedCount: (state) => state.selected.length,
@@ -42,7 +44,6 @@ export const useFileStore = defineStore("file", {
       const selectedItems = this.selected.map((i) => this.req?.items[i]);
       this.oldReq = this.req;
       this.req = value;
-
       this.selected = [];
 
       if (!this.req?.items) return;
@@ -56,6 +57,13 @@ export const useFileStore = defineStore("file", {
       const i = this.selected.indexOf(value);
       if (i === -1) return;
       this.selected.splice(i, 1);
+    },
+    toggleSortByCreated() {
+      this.sortByCreated = !this.sortByCreated;
+      this.selected = [];
+    },
+    setSortByCreated(value: boolean) {
+      this.sortByCreated = value;
     },
     // easily reset state using `$reset`
     clearFile() {

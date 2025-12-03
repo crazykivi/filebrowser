@@ -25,6 +25,7 @@ html[dir="rtl"] #listing {
   border-color: var(--divider);
   position: relative;
   display: flex;
+  /* display: inline-flex; */
   flex-wrap: nowrap;
   color: var(--textPrimary);
   transition:
