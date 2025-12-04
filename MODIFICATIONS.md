@@ -25,6 +25,10 @@ This document outlines the custom enhancements and fixes made to the original [F
 - **TUS upload handler patched** to respect client-sent timestamps
 - Fixed **partial upload state inconsistency** (files now appear immediately after replace/skip)
 
+### Media & Preview Enhancements
+- **Added WebP image format support** for resolution detection and metadata extraction  
+  (enables correct display of dimensions in file listings and avoids “unknown format” errors)
+
 ### Deployment
 - Created **dedicated Docker images** under [`crazykivi/filebrowser`](https://hub.docker.com/r/crazykivi/filebrowser)
 - Supports versioned tags (`v1`, `latest`, etc.) instead of relying on `latest`

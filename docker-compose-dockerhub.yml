@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   filebrowser:
-    image: crazykivi/filebrowser:latestfixed
+    image: crazykivi/filebrowser:latest
     container_name: filebrowser
     ports:
       - "8080:80"
