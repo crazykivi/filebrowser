@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { files } from "@/api"; // ← убедитесь, что путь правильный
+import { files } from "@/api";
 
 export const useFileStore = defineStore("file", {
   state: (): {
@@ -11,6 +11,7 @@ export const useFileStore = defineStore("file", {
     isFiles: boolean;
     preselect: string | null;
     sortByCreated: boolean;
+    activatedByLongPress: boolean;
   } => ({
     req: null,
     oldReq: null,
@@ -20,6 +21,7 @@ export const useFileStore = defineStore("file", {
     isFiles: false,
     preselect: null,
     sortByCreated: false,
+    activatedByLongPress: false,
   }),
   getters: {
     selectedCount: (state) => state.selected.length,
@@ -33,13 +35,18 @@ export const useFileStore = defineStore("file", {
         const data = await files.fetch(path);
         this.req = data;
       } catch (error) {
-        // Можно пробросить ошибку вверх или обработать здесь
         throw error;
       }
     },
 
     toggleMultiple() {
       this.multiple = !this.multiple;
+      if (!this.multiple) {
+        this.activatedByLongPress = false;
+      }
+    },
+    setActivatedByLongPress(value: boolean) {
+      this.activatedByLongPress = value;
     },
     updateRequest(value: Resource | null) {
       const selectedItems = this.selected.map((i) => this.req?.items[i]);

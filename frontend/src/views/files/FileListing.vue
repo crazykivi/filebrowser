@@ -133,20 +133,48 @@
             {{ t("files.folders") }}
           </h2>
           <div v-if="fileStore.req?.numDirs ?? false" @contextmenu="showContextMenu">
+            <!-- 
             <item v-for="item in dirs" :key="base64(item.name)" v-bind:index="item.index" v-bind:name="item.name"
               v-bind:isDir="item.isDir" v-bind:url="item.url" v-bind:modified="item.modified" v-bind:type="item.type"
               v-bind:size="item.size" v-bind:path="item.path">
-            </item>
+            </item> 
+            -->
+            <item
+              v-for="item in dirs"
+              :key="base64(item.name)"
+              :index="item.index"
+              :name="item.name"
+              :isDir="item.isDir"
+              :url="item.url"
+              :modified="item.modified"
+              :type="item.type"
+              :size="item.size"
+              :path="item.path"
+            />
           </div>
 
           <h2 v-if="fileStore.req?.numFiles ?? false">
             {{ t("files.files") }}
           </h2>
           <div v-if="fileStore.req?.numFiles ?? false" @contextmenu="showContextMenu">
+            <!-- 
             <item v-for="item in files" :key="base64(item.name)" v-bind:index="item.index" v-bind:name="item.name"
               v-bind:isDir="item.isDir" v-bind:url="item.url" v-bind:modified="item.modified" v-bind:type="item.type"
               v-bind:size="item.size" v-bind:path="item.path">
-            </item>
+            </item> 
+            -->
+            <item
+              v-for="item in files"
+              :key="base64(item.name)"
+              :index="item.index"
+              :name="item.name"
+              :isDir="item.isDir"
+              :url="item.url"
+              :modified="item.modified"
+              :type="item.type"
+              :size="item.size"
+              :path="item.path"
+            />
           </div>
         </template>
 
@@ -870,6 +898,7 @@ const openSearch = () => {
 };
 
 const toggleMultipleSelection = () => {
+  fileStore.setActivatedByLongPress(false);
   fileStore.toggleMultiple();
   layoutStore.closeHovers();
 };

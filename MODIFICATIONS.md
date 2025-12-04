@@ -13,6 +13,7 @@ This document outlines the custom enhancements and fixes made to the original [F
 - **"Create" button** in header and context menu → opens quick modal to create files/folders
 - **Persistent UI state**: sort/group settings are preserved across navigation
 - **Responsive context menus** with improved positioning
+- **Long-press to select**: on touch devices, holding a file/folder automatically enables multi-selection mode and selects the item (mimics native mobile file managers)
 
 ### Date-based File Grouping
 - **"Sort by creation date"** toggle button (`По дате создания`)

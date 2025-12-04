@@ -1,33 +1,11 @@
 <template>
-  <div
-    class="item"
-    :data-url="url" 
-    role="button"
-    tabindex="0"
-    :draggable="isDraggable"
-    @dragstart="dragStart"
-    @dragover="dragOver"
-    @drop="drop"
-    @click="itemClick"
-    @mousedown="handleMouseDown"
-    @mouseup="handleMouseUp"
-    @mouseleave="handleMouseLeave"
-    @touchstart="handleTouchStart"
-    @touchend="handleTouchEnd"
-    @touchcancel="handleTouchCancel"
-    @touchmove="handleTouchMove"
-    :data-dir="isDir"
-    :data-type="type"
-    :aria-label="name"
-    :aria-selected="isSelected"
-    :data-ext="getExtension(name).toLowerCase()"
-    @contextmenu="contextMenu"
-  >
+  <div class="item" :data-url="url" role="button" tabindex="0" :draggable="isDraggable" @dragstart="dragStart"
+    @dragover="dragOver" @drop="drop" @click="itemClick" @mousedown="handleMouseDown" @mouseup="handleMouseUp"
+    @mouseleave="handleMouseLeave" @touchstart="handleTouchStart" @touchend="handleTouchEnd"
+    @touchcancel="handleTouchCancel" @touchmove="handleTouchMove" :data-dir="isDir" :data-type="type" :aria-label="name"
+    :aria-selected="isSelected" :data-ext="getExtension(name).toLowerCase()" @contextmenu="contextMenu">
     <div>
-      <img
-        v-if="!readOnly && type === 'image' && isThumbsEnabled"
-        v-lazy="thumbnailUrl"
-      />
+      <img v-if="!readOnly && type === 'image' && isThumbsEnabled" v-lazy="thumbnailUrl" />
       <i v-else class="material-icons"></i>
     </div>
 
@@ -56,6 +34,7 @@ import { files as api } from "@/api";
 import * as upload from "@/utils/upload";
 import { computed, inject, ref } from "vue";
 import { useRouter } from "vue-router";
+import { watch } from 'vue';
 
 const touches = ref<number>(0);
 
@@ -141,6 +120,16 @@ const dragStart = () => {
     fileStore.selected.push(props.index);
   }
 };
+
+watch(
+  () => fileStore.selected.length,
+  (newCount) => {
+    if (fileStore.multiple && newCount === 0 && fileStore.activatedByLongPress) {
+      fileStore.multiple = false;
+      fileStore.activatedByLongPress = false;
+    }
+  }
+);
 
 const dragOver = (event: Event) => {
   if (!canDrop.value) return;
@@ -304,7 +293,7 @@ const click = (event: Event | KeyboardEvent) => {
 
 const open = () => {
   router.push({ path: props.url });
-  fileStore.preselect = props.url; 
+  fileStore.preselect = props.url;
   sessionStorage.setItem('filePreselect', props.url);
 };
 
@@ -333,10 +322,22 @@ const cancelLongPress = () => {
 };
 
 const handleLongPress = () => {
-  if (singleClick.value) {
-    longPressTriggered.value = true;
-    click(new Event("longpress"));
+  if (startPosition.value && checkMovement(startPosition.value.x, startPosition.value.y)) {
+    cancelLongPress();
+    return;
   }
+
+  longPressTriggered.value = true;
+
+  if (!fileStore.multiple) {
+    fileStore.toggleMultiple();
+    fileStore.setActivatedByLongPress(true);
+  }
+
+  if (!isSelected.value) {
+    fileStore.selected.push(props.index);
+  }
+
   cancelLongPress();
 };
 
@@ -384,6 +385,7 @@ const handleTouchMove = (event: TouchEvent) => {
     const touch = event.touches[0];
     if (checkMovement(touch.clientX, touch.clientY)) {
       cancelLongPress();
+      return;
     }
   }
 };
