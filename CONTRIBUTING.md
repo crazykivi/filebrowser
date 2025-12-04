@@ -126,3 +126,15 @@ After implementing the interface you should:
 
 If you need to add more flags, please update the function `addConfigFlags`.
 
+## Local Development with Docker Compose
+
+This fork includes two Docker Compose configurations for easier local testing and deployment:
+
+- **`docker-compose.yml`** — builds and runs a **local development image** from your current source code.
+- **`docker-compose-dockerhub.yml`** — runs the **latest published image** from Docker Hub (`crazykivi/filebrowser:latest`).
+
+### Build and run from source (for active development)
+
+```bash
+docker compose up -d
+
