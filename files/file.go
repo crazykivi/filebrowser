@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/spf13/afero"
+	_ "golang.org/x/image/webp"
 
 	fbErrors "github.com/filebrowser/filebrowser/v2/errors"
 	"github.com/filebrowser/filebrowser/v2/rules"
