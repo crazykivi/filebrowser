@@ -24,6 +24,7 @@ This document outlines the custom enhancements and fixes made to the original [F
 - **Preserves original file modification time (mtime)** during upload (when provided by client)
 - **TUS upload handler patched** to respect client-sent timestamps
 - Fixed **partial upload state inconsistency** (files now appear immediately after replace/skip)
+- **Paste images from clipboard**: Press `Ctrl+V` (or `Cmd+V` on macOS) to upload screenshots or copied images directly from the clipboard (works in modern Chrome, Edge, and Firefox).
 
 ### Media & Preview Enhancements
 - **Added WebP image format support** for resolution detection and metadata extraction  

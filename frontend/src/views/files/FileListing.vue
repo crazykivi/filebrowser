@@ -237,6 +237,7 @@ import {
   nextTick,
   onBeforeUnmount,
   onMounted,
+  onUnmounted,
   ref,
   watch,
 } from "vue";
@@ -295,6 +296,68 @@ function groupByMonthYear(items: ResourceItem[]) {
 
   return sortedKeys.map(key => ({ title: key, items: groups[key] }));
 }
+
+// Listening for the insertion event | Прослушивание событие вставки
+function handlePaste(e: ClipboardEvent) {
+  const target = e.target as HTMLElement;
+  // Ignoring insertion into input fields | Игнорирование вставки в поля ввода
+  if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+    return;
+  }
+
+  const items = e.clipboardData?.items;
+  if (!items) return;
+
+  let hasImage = false;
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (item.type.startsWith('image/')) {
+      hasImage = true;
+      const blob = item.getAsFile();
+      if (blob) {
+        uploadBlobAsFile(blob);
+      }
+    }
+  }
+
+  if (hasImage) {
+    e.preventDefault();
+  }
+}
+
+async function uploadBlobAsFile(blob: Blob) {
+  const now = new Date();
+  const extension = blob.type.split('/')[1]?.replace(/[^a-z0-9]/gi, '') || 'png';
+  const filename = `pasted-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}-${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}.${extension}`;
+  const file = new File([blob], filename, { type: blob.type });
+
+  // Conversion to Upload list format | Преобразование в формат UploadList
+  const uploadList: UploadList = [{
+    file,
+    name: filename,
+    size: blob.size,
+    isDir: false,
+    fullPath: undefined,
+  }];
+
+  const path = route.path.endsWith('/') ? route.path : route.path + '/';
+
+  try {
+    await upload.handleFiles(uploadList, path, false);
+  } catch (err) {
+    $showError(err instanceof Error ? err : String(err));
+  }
+}
+
+// The insertion listener | Слушатель вставки
+onMounted(() => {
+  document.addEventListener('paste', handlePaste);
+});
+
+// Unmounting the Insert listener | Размонтирование слушателя вставки
+onUnmounted(() => {
+  document.removeEventListener('paste', handlePaste);
+});
 
 // Helper function: month name -> index (0–11) | Вспомогательная функция: название месяца -> индекс (0–11)
 function getMonthIndex(monthName: string): number {
